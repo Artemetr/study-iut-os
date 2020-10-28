@@ -1,29 +1,69 @@
 #include <iostream>
+#include <thread>
+#include <future>
 
 using namespace std;
 
-void init_user_matrix(int** user_matrix, int& x, int& y) {
+void initUserMatrix(int**& userMatrix, int& size) {
     int value;
 
-    cout << "Input columns count: ";
-    cin >> x;
+    cout << "Input matrix size: ";
+    cin >> size;
+    if (!size) {
+        throw "Invalid matrix size";
+    }
 
-    cout << "Input rows count: ";
-    cin >> y;
-
-    for (int i = 0; i < y; i++) {
-        for (int j = 0; j < x; j++) {
+    userMatrix = new int*[size];
+    for (int i = 0; i < size; i++) {
+        userMatrix[i] = new int[size];
+        for (int j = 0; j < size; j++) {
             cin >> value;
-            user_matrix[i][j] = value;
+            if (!value) {
+                throw "Invalid matrix value";
+            }
+            userMatrix[i][j] = value;
+        }
+    }
+}
+
+void calculateBorderElementsSummOfMatrix(int** userMatrix, int size, int& result) {
+    result = 0;
+    for (int i = 0; i < size; i++) {
+        if (i == 0 || i == size - 1) {
+            for (int j = 0; j < size; j++) {
+                result += userMatrix[i][j];
+            }
+        } else {
+            result += userMatrix[i][0] + userMatrix[i][size - 1];
         }
     }
 }
 
 int main() {
-    int** user_matrix;
-    int x, y;
+    int** userMatrix;
+    int result;
+    int size;
 
-    init_user_matrix(user_matrix, x, y);
+    try {
+        initUserMatrix(userMatrix, size);
+    } catch (const char* e) {
+        cout << "Error: " << e << endl;
+        return EXIT_FAILURE;
+    }
+
+    thread th(calculateBorderElementsSummOfMatrix, userMatrix, size, ref(result));
+    if (!th.joinable()) {
+        cout << "Error with thread starting." << endl;
+        return EXIT_FAILURE;
+    }
+    th.join();
+
+    if (!result) {
+        cout << "Error with invalide thread response." << endl;
+        return EXIT_FAILURE;
+    }
+
+    cout << "Summ of matrix border elements: " << result << endl;
 
     return EXIT_SUCCESS;
 }
