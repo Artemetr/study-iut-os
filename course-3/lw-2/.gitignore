@@ -1,0 +1,12 @@
+# Executable
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.out
+
+# Ide folders
+.vscode/
+.idea/
+*.dSYM/
