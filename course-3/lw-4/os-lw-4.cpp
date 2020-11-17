@@ -4,24 +4,13 @@
 
 using namespace std;
 
-void initUserMatrix(int**& userMatrix, int& size) {
-    int value;
-
-    cout << "Input matrix size: ";
-    cin >> size;
-    if (!size) {
-        throw "Invalid matrix size";
-    }
-
-    userMatrix = new int*[size];
+void initRandomMatrix(int**& randomMatrix, int& size) {
+    size = 1024;
+    randomMatrix = new int*[size];
     for (int i = 0; i < size; i++) {
-        userMatrix[i] = new int[size];
+        randomMatrix[i] = new int[size];
         for (int j = 0; j < size; j++) {
-            cin >> value;
-            if (!value) {
-                throw "Invalid matrix value";
-            }
-            userMatrix[i][j] = value;
+            randomMatrix[i][j] = rand() % 2000;
         }
     }
 }
@@ -39,34 +28,56 @@ void calculateBorderElementsSummOfMatrix(int** userMatrix, int size, int& result
     }
 }
 
-int main() {
-    int** userMatrix;
+void runThread(int** matrix, int size, int priority, int needPolicy) {
+    sched_param sch;
     int result;
+    int policy;
+
+    thread th(calculateBorderElementsSummOfMatrix, matrix, size, ref(result));
+    pthread_getschedparam(th.native_handle(), &policy, &sch);
+    sch.sched_priority = priority;
+    policy = needPolicy;
+
+    if (!th.joinable()) {
+        cout << "Error with thread starting." << endl;
+        exit(EXIT_FAILURE);
+    }
+
+    auto start = chrono::steady_clock::now();
+    th.join();
+    auto end = chrono::steady_clock::now();
+    auto diff = end - start;
+
+    cout << "," << chrono::duration <double, nano> (diff).count();
+
+    if (!result) {
+        cout << "Error with invalide thread response." << endl;
+        exit(EXIT_FAILURE);
+    }
+}
+
+int main() {
+    int priorities [] = {1, -1, 2, -15, -2, 0, 15};
+    int politics [] = {SCHED_FIFO, SCHED_RR};
+    int** randomMatrix;
     int size;
 
     try {
-        initUserMatrix(userMatrix, size);
+        initRandomMatrix(randomMatrix, size);
     } catch (const char* e) {
         cout << "Error: " << e << endl;
         return EXIT_FAILURE;
     }
 
-    thread th(calculateBorderElementsSummOfMatrix, userMatrix, size, ref(result));
-    sched_param sch;
-    int policy; 
-    pthread_getschedparam(th.native_handle(), &policy, &sch);
-    if (!th.joinable()) {
-        cout << "Error with thread starting." << endl;
-        return EXIT_FAILURE;
+    for (int j : politics) {
+        for (int i : priorities) {
+            cout << j << "," << i;
+            for (int t = 0; t < 16; t++) {
+                runThread(randomMatrix, size, j, i);
+            }
+            cout << endl;
+        }
     }
-    th.join();
-
-    if (!result) {
-        cout << "Error with invalide thread response." << endl;
-        return EXIT_FAILURE;
-    }
-
-    cout << "Summ of matrix border elements: " << result << endl;
 
     return EXIT_SUCCESS;
 }
