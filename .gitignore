@@ -1,3 +1,4 @@
 # Ide folders
 .vscode/
 .idea/
+.DS_Store
