@@ -51,7 +51,7 @@ void runThread(int** matrix, int size, int priority, int needPolicy) {
     cout << "," << chrono::duration <double, nano> (diff).count();
 
     if (!result) {
-        cout << "Error with invalide thread response." << endl;
+        cout << "Error with invalid thread response." << endl;
         exit(EXIT_FAILURE);
     }
 }

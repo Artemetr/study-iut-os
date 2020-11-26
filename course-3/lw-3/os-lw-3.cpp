@@ -58,7 +58,7 @@ int main() {
     th.join();
 
     if (!result) {
-        cout << "Error with invalide thread response." << endl;
+        cout << "Error with invalid thread response." << endl;
         return EXIT_FAILURE;
     }
 
