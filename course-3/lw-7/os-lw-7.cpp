@@ -11,10 +11,9 @@
 #define UP 2
 #define DOWN 3
 
-HINSTANCE hInst;
-
 bool captured = false;
 
+HINSTANCE hInst;
 RECT rc;
 POINT startPoint;
 POINT previousPoint;
